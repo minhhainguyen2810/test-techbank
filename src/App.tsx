@@ -1,24 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import TodoList from "./component/TodoList";
+import TodoForm from "./component/TodoForm";
+import { Inputs, TTodo } from "./type";
+import React, { useEffect, useState } from "react";
+import { Button, Checkbox, Label, TextInput } from "flowbite-react";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { Datepicker } from "flowbite-react";
+import dayjs from "dayjs";
+import { useTodoStore } from "./store";
 
 function App() {
+  const addTodo = useTodoStore((state) => state.addTodo);
+  const syncStore = useTodoStore((state) => state.syncStore);
+  const todoForm = useForm<Inputs>();
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    addTodo({ id: Date.now(), ...data });
+    console.log(data);
+  };
+
+  useEffect(() => {
+    const todosLocal = JSON.parse(
+      localStorage.getItem("todos") || "[]"
+    ) as TTodo[];
+    if (todosLocal) syncStore(todosLocal);
+  }, [syncStore]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+    <div className="p-4">
+      <div>
+        <h1 className="my-4 font-bold">Minh Nguyen's Todo App</h1>
+        <form
+          className="flex max-w-md flex-col gap-4"
+          onSubmit={todoForm.handleSubmit(onSubmit)}
         >
-          Learn React
-        </a>
-      </header>
+          <TodoForm todoForm={todoForm} />
+          <Button gradientDuoTone="purpleToBlue" type="submit">
+            Add
+          </Button>
+        </form>
+        <TodoList />
+      </div>
     </div>
   );
 }
